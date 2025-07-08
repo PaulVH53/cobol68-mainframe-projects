@@ -1,0 +1,8 @@
+123456*89012345678901234567890123456789012345678901234567890123456789012        
+       IDENTIFICATION DIVISION.                                                 
+       PROGRAM-ID. HELLO.                                                       
+       ENVIRONMENT DIVISION.                                                    
+       DATA DIVISION.                                                           
+       PROCEDURE DIVISION.                                                      
+           DISPLAY 'HELLO, COBOL WORLD!'.                                       
+           STOP RUN.                                                            

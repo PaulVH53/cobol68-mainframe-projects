@@ -1,0 +1,143 @@
+/* HERC01.REXX.EXEC(SUBJCL) */                                                  
+/* RACE R   !!! ADDED FOR DEBUGGING - REMOVE ONCE WORKING !!! */                
+/* THIS REXX PROGRAM GENERATES JCL FROM A TEMPLATE AND SUBMITS IT. */           
+/* IT PROMPTS FOR A COBOL PROGRAM NAME, SUBSTITUTES IT INTO THE    */           
+/* TEMPLATE, AND THEN SUBMITS THE GENERATED JCL.                   */           
+                                                                                
+SAY "ENTER COBOL PROGRAM NAME TO COMPILE AND RUN:"                              
+PULL PGMNAME                                                                    
+
+/* CHECK IF PGMNAME WAS ENTERED */                                              
+IF PGMNAME = '' THEN DO                                                         
+   SAY "ERROR: PROGRAM NAME CANNOT BE EMPTY. EXITING."                          
+   EXIT 8                                                                       
+END                                                                             
+                                                                                
+/* DEFINE INPUT (TEMPLATE) AND OUTPUT (GENERATED JCL) DATASETS */               
+/* NOTE: SRCDSN POINTS TO THE TEMPLATE MEMBER.                 */               
+SRCDSN = "'HERC01.JCL.CNTL(TEMPLATE)'"                                          
+                                                                                
+/* TGTDSN_PDS POINTS TO THE PDS WHERE THE TEMPORARY JCL MEMBER */               
+/* WILL RESIDE. THE MEMBER NAME 'TEMPJCL' WILL BE SPECIFIED IN */               
+/* THE EXECIO COMMAND.                                         */               
+TGTDSN_PDS_UNQUOTED = "HERC01.JCL.CNTL" /* PDS NAME WITHOUT QUOTES */           
+TGTDSN_MEMBER = "TEMPJCL" /* THE MEMBER NAME WITHIN THE PDS */                  
+                                                                                
+/* CONSTRUCT THE FULL DATASET NAME WITH MEMBER, */                              
+/* ENSURING PROPER QUOTING */                                                   
+FULL_TGTDSN_MEMBER = "'" || TGTDSN_PDS_UNQUOTED || '(' || ,                     
+                     TGTDSN_MEMBER || ')' || "'"                                
+                                                                                
+SAY "USING TEMPLATE: " SRCDSN                                                   
+SAY "GENERATING JCL TO: " FULL_TGTDSN_MEMBER                                    
+                                                                                
+/* --- STEP 1: CLEAN UP PREVIOUS TEMPORARY JCL MEMBER --- */                    
+/* DIRECTLY ATTEMPT TO DELETE THE OLD TEMPORARY JCL MEMBER. */                  
+/* IF IT DOESN'T EXIST (RC=8 OR RC=12), THAT'S FINE.        */                  
+/* IF IT EXISTS AND IS DELETED (RC=0), THAT'S ALSO FINE.    */                  
+ADDRESS TSO "DELETE " FULL_TGTDSN_MEMBER " PURGE SCRATCH"                       
+IF RC = 0 THEN DO
+   SAY "PREVIOUS " FULL_TGTDSN_MEMBER " DELETED SUCCESSFULLY."                  
+END                                                                             
+ELSE IF RC = 8 | RC = 12 THEN DO                                                
+   SAY FULL_TGTDSN_MEMBER " WAS NOT FOUND OR COULD NOT BE DELETED " ,           
+     " (RC="||RC||")."                                                          
+   SAY "       PROCEEDING AS IT'S LIKELY NOT AN ISSUE FOR CREATION."            
+END                                                                             
+ELSE DO                                                                         
+   SAY "ERROR: UNEXPECTED RETURN CODE FROM DELETE OF " ,                        
+       FULL_TGTDSN_MEMBER " (RC="||RC||")."                                     
+   SAY "       THIS MAY INDICATE A PROBLEM. EXITING."                           
+   EXIT 8                                                                       
+END                                                                             
+                                                                                
+/* --- STEP 2: ALLOCATE INPUT AND OUTPUT FILES FOR REXX EXECIO --- */           
+/* ALLOCATE THE TEMPLATE DATASET FOR READING (IN) */                            
+ADDRESS TSO "ALLOC F(IN) DA("SRCDSN") SHR"                                      
+IF RC <> 0 THEN DO                                                              
+   SAY "ERROR: COULD NOT ALLOCATE INPUT DATASET " SRCDSN ,                      
+       " (RC="RC"). EXITING."                                                   
+   EXIT 8                                                                       
+END                                                                             
+                                                                                
+/* ALLOCATE THE TARGET PDS FOR WRITING (OUT). WE ALLOCATE THE PDS, */           
+/* AND EXECIO WILL HANDLE WRITING TO THE SPECIFIC MEMBER.          */           
+/* IMPORTANT: ENSURE THE DATASET NAME IS CORRECTLY QUOTED FOR TSO. */           
+ADDRESS TSO "ALLOC F(OUT) DA("FULL_TGTDSN_MEMBER") OLD"                         
+SAY "DEBUG: RC AFTER ALLOC F(OUT) FOR MEMBER IS " RC                            
+IF RC <> 0 THEN DO                                                              
+   SAY "ERROR: COULD NOT ALLOCATE OUTPUT MEMBER " FULL_TGTDSN_MEMBER ,          
+       " (RC="RC")."                                                            
+   SAY "       PLEASE ENSURE HERC01.JCL.CNTL EXISTS AND IS NOT IN USE."         
+   SAY "       EXITING."                                                        
+   ADDRESS TSO "FREE FI(IN)" /* FREE IN BEFORE EXITING */                       
+   EXIT 8                                                                       
+END                                                                             
+                                                                                
+/* --- STEP 3: READ THE JCL TEMPLATE INTO A REXX STEM VARIABLE --- */ 
+"EXECIO * DISKR IN (STEM L. FINIS)"                                             
+IF RC <> 0 THEN DO                                                              
+   SAY "ERROR: COULD NOT READ FROM TEMPLATE " SRCDSN ,                          
+       " (RC="RC"). EXITING."                                                   
+   ADDRESS TSO "FREE FI(IN OUT)"                                                
+   EXIT 8                                                                       
+END                                                                             
+SAY "READ " L.0 " LINES FROM TEMPLATE."                                         
+                                                                                
+/* -- STEP 4: PERFORM STRING REPLACEMENT AND BUILD NEW JCL LINES -- */          
+/* USE A CUSTOM CHANGESTR FUNCTION FOR PROPER STRING REPLACEMENT.   */          
+NEWLINE.0 = L.0 /* INITIALIZE COUNT FOR OUTPUT STEM */                          
+DO I = 1 TO L.0                                                                 
+   LINE = L.I                                                                   
+   /* REPLACE ALL OCCURRENCES OF '&PGMNAME' */                                  
+   /* WITH THE ACTUAL PROGRAM NAME (PADDED TO 8 CHARS) */
+   NEWLINE.I = CHANGESTR("&PGMNAME", PGMNAME, LINE)                          
+END                                                                             
+                                                                                
+/* --- STEP 5: WRITE THE MODIFIED JCL TO THE TEMPORARY MEMBER --- */            
+/* THE MEMBER IS ALREADY SPECIFIED IN THE ALLOC, SO NO NEED HERE. */            
+"EXECIO * DISKW OUT (STEM NEWLINE. FINIS)"                                      
+IF RC <> 0 THEN DO                                                              
+   SAY "ERROR: COULD NOT WRITE GENERATED JCL TO " ,                             
+       FULL_TGTDSN_MEMBER " (RC="RC"). EXITING."                                
+   ADDRESS TSO "FREE FI(IN OUT)"                                                
+   EXIT 8                                                                       
+END                                                                             
+SAY "GENERATED JCL WRITTEN TO " FULL_TGTDSN_MEMBER "."                          
+                                                                                
+/* --- STEP 6: FREE THE ALLOCATED FILES --- */                                  
+ADDRESS TSO "FREE FI(IN OUT)"                                                   
+IF RC <> 0 THEN DO                                                              
+   SAY "WARNING: ERROR FREEING FILES (RC="RC")."                                
+END                                                                             
+                                                                                
+/* --- STEP 7: SUBMIT THE GENERATED JCL --- */                                  
+SUBMITCMD = "SUBMIT " || FULL_TGTDSN_MEMBER
+SAY "SUBMITTING COMMAND: " SUBMITCMD                                            
+ADDRESS TSO SUBMITCMD                                                           
+IF RC <> 0 THEN DO                                                              
+   SAY "ERROR: JCL SUBMISSION FAILED (RC="RC")."                                
+   EXIT 8                                                                       
+END                                                                             
+SAY "JOB SUBMITTED FOR PROGRAM: " PGMNAME                                       
+                                                                                
+EXIT 0                                                                          
+                                                                                
+/* --- CUSTOM CHANGESTR FUNCTION (NEEDED IF NOT BUILT-IN) --- */                
+/* THIS FUNCTION REPLACES ALL OCCURRENCES OF 'OLDSTR' */                        
+/* WITH 'NEWSTR' IN 'TARGETSTR'. */                                             
+CHANGESTR:                                                                      
+   ARG OLDSTR, NEWSTR, TARGETSTR                                                
+   NEWTARGETSTR = ''                                                            
+   DO FOREVER                                                                   
+      POS = POS(OLDSTR, TARGETSTR)                                              
+      IF POS = 0 THEN RETURN NEWTARGETSTR || TARGETSTR                          
+      /* NO MORE OCCURRENCES */                                                 
+      /* APPEND PART BEFORE OLDSTR, THEN NEWSTR, */                             
+      /* THEN REMAINING TARGETSTR */                                            
+      NEWTARGETSTR = NEWTARGETSTR || SUBSTR(TARGETSTR, 1, POS - 1) || ,         
+                     NEWSTR                                                     
+      TARGETSTR = SUBSTR(TARGETSTR, POS + LENGTH(OLDSTR))                       
+      /* MOVE PAST REPLACED PART */                                             
+   END
+                                                                          

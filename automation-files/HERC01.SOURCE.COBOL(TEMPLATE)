@@ -1,0 +1,21 @@
+      ******************************************************************
+      * COBOL TEMPLATE FOR MVS 3.8J TK5 SYSTEM                         *
+      * COPY THIS FILE TO CREATE NEW PROGRAMS                          *
+      * FILENAME: HERC01.SOURCE.COBOL(TEMPLATE)                        *
+      ******************************************************************
+123456*89012345678901234567890123456789012345678901234567890123456789012
+       IDENTIFICATION DIVISION.                                         
+       PROGRAM-ID. SAMPLE.                                              
+      *                                                                 
+       ENVIRONMENT DIVISION.                                            
+       INPUT-OUTPUT SECTION.                                            
+      *                                                                 
+       DATA DIVISION.                                                   
+       WORKING-STORAGE SECTION.                                         
+      *                                                                 
+       01  WS-MESSAGE       PIC X(30) VALUE 'HELLO FROM TEMPLATE!'.     
+      *                                                                 
+       PROCEDURE DIVISION.                                              
+       MAIN-PARAGRAPH.                                                  
+           DISPLAY WS-MESSAGE                                           
+           STOP RUN.                                                    

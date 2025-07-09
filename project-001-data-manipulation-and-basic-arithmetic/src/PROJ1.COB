@@ -1,8 +1,8 @@
       ******************************************************************
       * FILENAME: HERC01.SOURCE.COBOL(PROJ1)                           *
       * PROJECT 1: DATA MANIPULATION AND BASIC ARITHMETIC              *
+      * This program is designed for COBOL 68 environments.            *
       ******************************************************************
-123456*89012345678901234567890123456789012345678901234567890123456789012
        IDENTIFICATION DIVISION.                                         
        PROGRAM-ID. PROJ1.                                               
       *                                                                 

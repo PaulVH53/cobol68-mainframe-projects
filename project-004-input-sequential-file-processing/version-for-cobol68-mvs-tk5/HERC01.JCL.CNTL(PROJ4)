@@ -1,0 +1,50 @@
+//PROJ4 JOB (001),'FILE INPUT',CLASS=A,MSGCLASS=H                      
+//*********************************************************************
+//* FILENAME: HERC01.JCL.CNTL(PROJ4)                                  *
+//* JCL FOR COMPILING, LINKING, AND EXECUTING COBOL PROGRAM PROJ4     *
+//* THIS PROGRAM READS A SEQUENTIAL INPUT FILE.                       *
+//*********************************************************************
+//COMP     EXEC PGM=IKFCBL00,PARM='OBJECT,NODECK,NOLIST,SIZE=131072'   
+//* COBOL COMPILER STEP                                                
+//STEPLIB  DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSLIN   DD DSN=&&LOADSET,UNIT=VIO,DISP=(MOD,PASS),                  
+//             SPACE=(80,(250,100))                                    
+//SYSIN    DD DSN=HERC01.SOURCE.COBOL(PROJ4),DISP=SHR                  
+//SYSUT1   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT2   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT3   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT4   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSLIB   DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSPUNCH DD DUMMY                                                    
+//*********************************************************************
+//* DELETE PREVIOUS LOAD MODULE (IF IT EXISTS)                        *
+//*********************************************************************
+//DELMOD   EXEC PGM=IDCAMS                                             
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSIN    DD *                                                        
+ DELETE 'HERC01.LOAD.LIB(PROJ4)' PURGE SCRATCH                         
+/*                                                                     
+//*********************************************************************
+//* LINK-EDIT STEP: CREATES THE EXECUTABLE LOAD MODULE                *
+//*********************************************************************
+//LKED     EXEC PGM=IEWL,PARM='MAP,LIST,LET',COND=(5,LT,COMP)          
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)                          
+//SYSLIB   DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSLMOD  DD DSN=HERC01.LOAD.LIB(PROJ4),DISP=(MOD,KEEP,KEEP),         
+//             UNIT=SYSDA,SPACE=(TRK,(1,1,1)),                         
+//             DCB=(RECFM=U,BLKSIZE=19069)                             
+//SYSPRINT DD SYSOUT=*                                                 
+//*********************************************************************
+//* GO STEP: EXECUTES THE COMPILED AND LINKED COBOL PROGRAM           *
+//*********************************************************************
+//GO       EXEC PGM=PROJ4,COND=((5,LT,COMP),(5,LT,LKED))                
+//STEPLIB  DD DSN=HERC01.LOAD.LIB,DISP=SHR                              
+//SYSOUT   DD SYSOUT=*                                                  
+//INFILE   DD DSN=HERC01.PROJ4.INPUT,DISP=SHR                           
+//********************************************************************* 
+//* INFILE DD STATEMENT:                                              * 
+//* - CONNECTS THE COBOL PROGRAM'S 'INFILE' (FROM SELECT STATEMENT) *   
+//* TO THE ACTUAL SEQUENTIAL DATASET 'HERC01.PROJ4.INPUT'.        *     
+//* - DISP=SHR: ALLOWS OTHER USERS TO READ THE FILE CONCURRENTLY.   *   
+//********************************************************************* 

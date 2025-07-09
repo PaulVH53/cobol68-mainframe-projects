@@ -1,6 +1,7 @@
       ******************************************************************        
       * FILENAME: HERC01.SOURCE.COBOL(PROJ3)                           *        
       * PROJECT 3: CONDITIONAL LOGIC AND CONTROL FLOW                  *        
+      * This program is designed for COBOL 68 environments.            *       
       ******************************************************************        
        IDENTIFICATION DIVISION.                                                 
        PROGRAM-ID. PROJ3.                                                       

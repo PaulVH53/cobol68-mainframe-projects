@@ -1,0 +1,19 @@
+RFE                          ALLOCATE NEW DATA SET                       R51.6
+
+
+     NAME OF NEW DATA SET ==> 'HERC01.PROJ4.INPUT'
+
+
+     RECORD FORMAT ==> FB          <-- Type FB here (Fixed Blocked)
+     LOGICAL RECORD LENGTH ==> 23  <-- Type 23 here (20 for name + 3 for age)
+     PHYSICAL BLOCK SIZE ==> 2300  <-- Type 2300 here (a multiple of 23, e.g., 100 records)
+
+
+     VOLUME ==>                    <-- Leave blank unless you know a specific volume
+     UNIT ==>                      <-- Leave blank, MVS will pick a default if available
+
+
+     ALLOCATION SPACE UNIT ==> T   ( T OR C OR B )
+     PRIMARY SPACE QUANTITY ==> 1  <-- Type 1 here (for 1 track initially)
+     SECONDARY SPACE QUANTITY ==> 1  <-- Type 1 here (for 1 track if more space is needed)
+     NUMBER OF DIRECTORY BLOCKS ==> 0  <-- This is correct for a sequential file

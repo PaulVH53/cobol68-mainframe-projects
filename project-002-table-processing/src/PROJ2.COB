@@ -1,8 +1,8 @@
       ****************************************************************** 
       * FILENAME: HERC01.SOURCE.COBOL(PROJ2)                           * 
-      * PROJECT 2: COBOL TABLE (ARRAY) PROCESSING                      * 
+      * PROJECT 2: COBOL TABLE (ARRAY) PROCESSING                      *
+      * This program is designed for COBOL 68 environments.            * 
       ****************************************************************** 
-123456*89012345678901234567890123456789012345678901234567890123456789012 
        IDENTIFICATION DIVISION.                                          
        PROGRAM-ID. PROJ2.                                                
       *                                                                  

@@ -1,0 +1,68 @@
+//PROJ5 JOB (001),'WRITE FILE',CLASS=A,MSGCLASS=H                      
+//*********************************************************************
+//* FILENAME: HERC01.JCL.CNTL(PROJ5)                                   
+//* JCL FOR COMPILING, LINKING, AND EXECUTING COBOL PROGRAM PROJ5      
+//* THIS PROGRAM WRITES TO A SEQUENTIAL OUTPUT FILE.                   
+//*********************************************************************
+//COMP      EXEC PGM=IKFCBL00,PARM='OBJECT,NODECK,NOLIST,SIZE=131072'  
+//* COBOL COMPILER STEP                                                
+//STEPLIB   DD DSN=SYS1.COBLIB,DISP=SHR                                
+//SYSPRINT  DD SYSOUT=*                                                
+//SYSLIN    DD DSN=&&LOADSET,UNIT=VIO,DISP=(MOD,PASS),                 
+//             SPACE=(80,(250,100))                                    
+//SYSIN     DD DSN=HERC01.SOURCE.COBOL(PROJ5),DISP=SHR                 
+//SYSUT1    DD UNIT=VIO,SPACE=(TRK,(5,1))                              
+//SYSUT2    DD UNIT=VIO,SPACE=(TRK,(5,1))                              
+//SYSUT3    DD UNIT=VIO,SPACE=(TRK,(5,1))                              
+//SYSUT4    DD UNIT=VIO,SPACE=(TRK,(5,1))                              
+//SYSLIB    DD DSN=SYS1.COBLIB,DISP=SHR                                
+//SYSPUNCH DD DUMMY                                                    
+//*********************************************************************
+//* DELETE PREVIOUS LOAD MODULE (IF IT EXISTS)                         
+//*********************************************************************
+//DELMOD    EXEC PGM=IDCAMS,COND=(5,LT,COMP)                           
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSIN    DD *                                                        
+ DELETE 'HERC01.LOAD.LIB(PROJ5)' PURGE SCRATCH                         
+/*                                                                     
+//*********************************************************************
+//* LINK-EDIT STEP: CREATES THE EXECUTABLE LOAD MODULE                 
+//*********************************************************************
+//LKED      EXEC PGM=IEWL,PARM='MAP,LIST,LET',COND=(5,LT,COMP)         
+//SYSLIN    DD DSN=&&LOADSET,DISP=(OLD,DELETE)                         
+//SYSLIB    DD DSN=SYS1.COBLIB,DISP=SHR                                
+//SYSLMOD   DD DSN=HERC01.LOAD.LIB(PROJ5),DISP=(MOD,KEEP,KEEP),        
+//             UNIT=SYSDA,SPACE=(TRK,(1,1,1)),                         
+//             DCB=(RECFM=U,BLKSIZE=19069)                             
+//SYSPRINT DD SYSOUT=*                                                 
+//*********************************************************************
+//* GO STEP: EXECUTES THE COMPILED AND LINKED COBOL PROGRAM
+//*********************************************************************  
+//GO        EXEC PGM=PROJ5,COND=((5,LT,COMP),(5,LT,LKED))                
+//STEPLIB   DD DSN=HERC01.LOAD.LIB,DISP=SHR                              
+//SYSOUT    DD SYSOUT=*                                                  
+//* DD STATEMENT FOR THE OUTPUT FILE:                                    
+//OUTFILE   DD DSN=HERC01.PROJ5.OUTPUT,                                  
+//             DISP=(NEW,CATLG,DELETE),                                  
+//             UNIT=SYSDA,                                               
+//             SPACE=(TRK,(1,1)),                                        
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)                       
+//*********************************************************************  
+//* OUTFILE DD STATEMENT:                                                
+//* - CONNECTS THE COBOL PROGRAM'S 'OUTFILE' (FROM SELECT STATEMENT)     
+//* TO THE ACTUAL SEQUENTIAL DATASET 'HERC01.PROJ5.OUTPUT'.              
+//* - DISP=(NEW,CATLG,DELETE):                                           
+//* - NEW: CREATE A NEW DATASET.                                         
+//* - CATLG: CATALOG THE DATASET IF SUCCESSFUL (SO IT CAN BE FOUND BY DS 
+N).                                                                      
+//* - DELETE: DELETE THE DATASET IF THE JOB ABENDS.                      
+//* - UNIT=SYSDA: SPECIFIES A GENERIC DISK UNIT.                         
+//* - SPACE=(TRK,(1,1)): ALLOCATES 1 TRACK, WITH 1 TRACK FOR SECONDARY A 
+LLOCATION.                                                               
+//* - DCB=(RECFM=FB,LRECL=80,BLKSIZE=800): DATA CONTROL BLOCK PARAMETERS 
+:                                                                        
+//* - RECFM=FB: RECORD FORMAT IS FIXED BLOCKED (RECORDS ARE FIXED LENGTH 
+, BLOCKED).                                                              
+//* - LRECL=80: LOGICAL RECORD LENGTH IS 80 BYTES.                       
+//* - BLKSIZE=800: BLOCK SIZE IS 800 BYTES (10 RECORDS PER BLOCK).       
+//*********************************************************************  

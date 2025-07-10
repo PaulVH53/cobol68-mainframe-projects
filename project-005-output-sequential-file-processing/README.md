@@ -1,14 +1,16 @@
-# Project 4: Introduction to Files - Sequential File Processing (Input)
+## Project 5: 
+Introduction to Files - Sequential File Processing (Output)
 
-## Objective: 
-Learn to read data from a sequential dataset.
+# Objective: 
+Learn to write data to a sequential dataset.
 
-## Tasks:
-- Create a simple sequential data file (e.g., using TSO EDIT or a REXX script to build it) with a few records (e.g., names and ages).
-- Write a COBOL program to define the FD (File Description) and record layout for this file.
-- Use OPEN INPUT, READ, and CLOSE statements to process the file.
-- Display each record read.
-- JCL Focus: DD statement for INPUT file.
+# Tasks:
+- Modify the Project 3 program or create a new one.
+- Define an FD and record layout for an OUTPUT file.
+- Generate new records within the COBOL program (e.g., calculated values, transformed data).
+- Use OPEN OUTPUT, WRITE, and CLOSE statements.
+- JCL Focus: DD statement for OUTPUT file.
 
-## Expected Output: 
-Display of each record from the input file.
+# Expected Output: 
+A new sequential data file created on your Hercules/MVS system, viewable via TSO BROWSE or EDIT.
+

@@ -1,0 +1,6 @@
+//ALLOC    JOB (001),'ALLOC LIB',CLASS=A,MSGCLASS=H  
+//STEP1    EXEC PGM=IEFBR14                          
+//DD1      DD DSN=HERC01.PROJ6.LOAD,                 
+//            DISP=(NEW,CATLG,DELETE),               
+//            UNIT=SYSDA,SPACE=(TRK,(10,5,5)),       
+//            DCB=(RECFM=U,BLKSIZE=19069,DSORG=PO)   

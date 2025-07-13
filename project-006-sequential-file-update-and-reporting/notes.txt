@@ -1,0 +1,19 @@
+We'll follow these steps:
+
+Create the Input Transaction Data File.
+
+Create the COBOL Program (PROJ6.COB).
+
+Create the JCL for Compilation, Link-Edit, and Execution.
+
+Step 1: Create the Input Transaction Data File
+You'll create a simple sequential data file named HERC01.PROJ6.TRANS. Each record will contain:
+
+ITEM-CODE: 10 characters (alphanumeric)
+
+QUANTITY: 5 digits (numeric)
+
+PRICE: 5 digits, 2 decimal places (numeric)
+
+So, each record will be 10 + 5 + 5 + 2 = 22 characters long.
+

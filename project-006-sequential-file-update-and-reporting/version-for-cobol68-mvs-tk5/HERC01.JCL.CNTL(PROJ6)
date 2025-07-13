@@ -1,0 +1,44 @@
+//PROJ6    JOB (001),'REPORT JOB',CLASS=A,MSGCLASS=H                   
+//*********************************************************************
+//*** JCL FOR COMPILING, LINKING, AND EXECUTING COBOL PROGRAM PROJ6    
+//*********************************************************************
+//COMP     EXEC PGM=IKFCBL00,PARM='OBJECT,NODECK,NOLIST,SIZE=131072'   
+//STEPLIB  DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSLIN   DD DSN=&&LOADSET,UNIT=VIO,DISP=(MOD,PASS),                  
+//             SPACE=(80,(250,100))                                    
+//SYSIN    DD DSN=HERC01.SOURCE.COBOL(PROJ6),DISP=SHR                  
+//SYSUT1   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT2   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT3   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSUT4   DD UNIT=VIO,SPACE=(TRK,(5,1))                               
+//SYSLIB   DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSPUNCH DD DUMMY                                                    
+//*********************************************************************
+//*** DELETE PREVIOUS LOAD MODULE (IF IT EXISTS)                       
+//*********************************************************************
+//DELMOD   EXEC PGM=IDCAMS,COND=(8,LT,COMP)                            
+//SYSPRINT DD SYSOUT=*                                                 
+//SYSIN    DD *                                                        
+  DELETE HERC01.PROJ6.LOAD(PROJ6)                                      
+  SET MAXCC=0                                                          
+//*********************************************************************
+//*** LINK-EDIT (CREATE LOAD MODULE)                                   
+//*********************************************************************
+//LKED     EXEC PGM=IEWL,PARM='MAP,LIST,LET',COND=(8,LT,COMP)          
+//SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)                          
+//SYSLIB   DD DSN=SYS1.COBLIB,DISP=SHR                                 
+//SYSLMOD  DD DSN=HERC01.PROJ6.LOAD(PROJ6),                            
+//            DISP=SHR,                                                
+//            SPACE=(TRK,(10,5,5)),                                    
+//            UNIT=SYSDA,                                              
+//            DCB=(RECFM=U,BLKSIZE=19069)                              
+//SYSPRINT DD SYSOUT=*                                                 
+//*********************************************************************
+//*** GO STEP: EXECUTES THE COMPILED AND LINKED COBOL PROGRAM          
+//*********************************************************************
+//GO       EXEC PGM=PROJ6,COND=((8,LT,COMP),(8,LT,LKED))    
+//STEPLIB  DD DSN=HERC01.PROJ6.LOAD,DISP=SHR                
+//SYSOUT   DD SYSOUT=*                                      
+//INTRANS  DD DSN=HERC01.PROJ6.TRANS,DISP=SHR               
+//REPORT   DD SYSOUT=*                                      
